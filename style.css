@@ -1,0 +1,586 @@
+/* ================================================================
+   NovaMind — Friendly Colour-Shifting 3D Chatbot  |  style.css
+   Theme : Soft, warm, beautiful — slowly cycles through the full
+           colour spectrum via CSS hue-rotate (one full loop / 30s)
+   3D    : Spinning cube avatar + mouse-tracked card perspective tilt
+   ================================================================ */
+
+/* ── 1. RESET & BASE TOKENS ───────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* ── Colour tokens (all hsl so hue-rotate carries them naturally) ── */
+  --accent:   hsl(250, 85%, 65%);      /* soft violet — base accent     */
+  --accent2:  hsl(200, 85%, 60%);      /* sky blue                      */
+  --accent3:  hsl(320, 75%, 65%);      /* rose pink                     */
+  --user-clr: hsl(160, 70%, 52%);      /* mint green for user bubbles   */
+
+  --bg-base:  hsl(240, 30%, 12%);      /* dark navy, not pitch black    */
+  --surface:  rgba(255,255,255,0.06);
+  --surface2: rgba(255,255,255,0.11);
+  --border:   rgba(255,255,255,0.12);
+  --text:     hsl(220, 25%, 92%);
+  --text-dim: rgba(200,210,230,0.52);
+
+  --bot-bubble:  rgba(140,120,255,0.10);
+  --user-bubble: rgba(80,220,160,0.10);
+
+  /* ── Typography ── */
+  --f-display: 'Plus Jakarta Sans', sans-serif;
+  --f-body:    'DM Sans', sans-serif;
+
+  /* ── Motion ── */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur:  0.22s;
+}
+
+/* Light theme overrides */
+body.light {
+  --bg-base:     hsl(220, 40%, 96%);
+  --surface:     rgba(255,255,255,0.60);
+  --surface2:    rgba(255,255,255,0.80);
+  --border:      rgba(120,100,220,0.18);
+  --text:        hsl(230, 30%, 18%);
+  --text-dim:    rgba(60,50,100,0.50);
+  --bot-bubble:  rgba(140,120,255,0.09);
+  --user-bubble: rgba(60,190,130,0.09);
+}
+
+html, body { height: 100%; -webkit-font-smoothing: antialiased; overflow: hidden; }
+
+/* ── 2. SLOWLY COLOUR-SHIFTING BACKGROUND ────────────────────── */
+/*  The entire page smoothly rotates through all hues every 30 s  */
+body {
+  font-family: var(--f-body);
+  color: var(--text);
+  background: var(--bg-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100svh;
+  /* Slow, gentle hue rotation — covers full spectrum in 30 s */
+  animation: cycleHue 30s linear infinite;
+}
+@keyframes cycleHue {
+  0%   { filter: hue-rotate(0deg);   }
+  100% { filter: hue-rotate(360deg); }
+}
+
+/* ── 3. BACKGROUND SCENE ─────────────────────────────────────── */
+.bg-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Soft blurred gradient orbs — feel warm & dreamy, not dark */
+.bg-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  animation: orbFloat ease-in-out infinite alternate;
+}
+.o1 { width:500px; height:500px; top:-130px; left:-110px;  background: radial-gradient(circle, hsla(250,80%,70%,0.28), transparent 70%); animation-duration:12s; }
+.o2 { width:420px; height:420px; bottom:-80px; right:-90px; background: radial-gradient(circle, hsla(200,80%,65%,0.25), transparent 70%); animation-duration:15s; animation-delay:-5s; }
+.o3 { width:300px; height:300px; top:38%; left:52%;         background: radial-gradient(circle, hsla(320,75%,68%,0.20), transparent 70%); animation-duration:10s; animation-delay:-3s; }
+.o4 { width:240px; height:240px; top:8%;  right:22%;        background: radial-gradient(circle, hsla(160,70%,60%,0.18), transparent 70%); animation-duration:13s; animation-delay:-8s; }
+
+@keyframes orbFloat {
+  from { transform: translate(0,0)        scale(1);    }
+  to   { transform: translate(26px,38px)  scale(1.13); }
+}
+
+/* Subtle 3-D grid floor — gentle, not scary */
+.bg-grid {
+  position: absolute;
+  bottom: -8%;
+  left: -20%;
+  width: 140%;
+  height: 42%;
+  background-image:
+    linear-gradient(rgba(160,140,255,0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(160,140,255,0.08) 1px, transparent 1px);
+  background-size: 54px 54px;
+  transform: rotateX(64deg);
+  animation: gridScroll 9s linear infinite;
+}
+@keyframes gridScroll {
+  from { background-position: 0 0; }
+  to   { background-position: 0 54px; }
+}
+
+/* Floating sparkle dots */
+.sparks { position: absolute; inset: 0; }
+.sparks span {
+  position: absolute;
+  border-radius: 50%;
+  animation: sparkle ease-in-out infinite alternate;
+  opacity: 0;
+}
+/* 10 individually placed sparks */
+.sparks span:nth-child(1)  { width:5px;  height:5px;  top:12%; left:8%;   background:hsl(250,80%,75%); animation-duration:4s;  animation-delay:0s; }
+.sparks span:nth-child(2)  { width:4px;  height:4px;  top:22%; left:78%;  background:hsl(200,80%,70%); animation-duration:5s;  animation-delay:1s; }
+.sparks span:nth-child(3)  { width:6px;  height:6px;  top:55%; left:14%;  background:hsl(320,75%,72%); animation-duration:3.5s;animation-delay:2s; }
+.sparks span:nth-child(4)  { width:4px;  height:4px;  top:70%; left:60%;  background:hsl(160,70%,62%); animation-duration:6s;  animation-delay:0.5s; }
+.sparks span:nth-child(5)  { width:5px;  height:5px;  top:35%; left:45%;  background:hsl(40,80%,68%);  animation-duration:4.5s;animation-delay:3s; }
+.sparks span:nth-child(6)  { width:3px;  height:3px;  top:80%; left:30%;  background:hsl(250,80%,75%); animation-duration:5.5s;animation-delay:1.5s; }
+.sparks span:nth-child(7)  { width:5px;  height:5px;  top:18%; left:55%;  background:hsl(200,80%,70%); animation-duration:3s;  animation-delay:2.5s; }
+.sparks span:nth-child(8)  { width:4px;  height:4px;  top:65%; left:88%;  background:hsl(320,75%,72%); animation-duration:6s;  animation-delay:0s; }
+.sparks span:nth-child(9)  { width:6px;  height:6px;  top:48%; left:72%;  background:hsl(160,70%,62%); animation-duration:4s;  animation-delay:4s; }
+.sparks span:nth-child(10) { width:3px;  height:3px;  top:88%; left:50%;  background:hsl(40,80%,68%);  animation-duration:5s;  animation-delay:1s; }
+
+@keyframes sparkle {
+  from { opacity:0;   transform: scale(0.6) translateY(0);   }
+  50%  { opacity:0.9; }
+  to   { opacity:0;   transform: scale(1.2) translateY(-16px); }
+}
+
+/* ── 4. 3-D TILT WRAPPER ─────────────────────────────────────── */
+.tilt-wrap {
+  perspective: 1000px;
+  z-index: 10;
+  position: relative;
+}
+
+/* ── 5. GLASS CARD ───────────────────────────────────────────── */
+.chat-card {
+  width: min(800px, 96vw);
+  height: min(88vh, 860px);
+  border-radius: 26px;
+  background: var(--surface);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid var(--border);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.05),
+    0 30px 80px rgba(0,0,0,0.28),
+    inset 0 1px 0 rgba(255,255,255,0.18);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: box-shadow 0.3s var(--ease), transform 0.08s linear;
+  animation: cardIn 0.7s var(--ease) both;
+}
+@keyframes cardIn {
+  from { opacity:0; transform: translateY(36px) scale(0.96); }
+  to   { opacity:1; transform: none; }
+}
+
+/* Animated rainbow shine along the top edge */
+.card-shine {
+  position: absolute;
+  top: 0; left: 8%; width: 84%; height: 2px;
+  background: linear-gradient(
+    90deg,
+    hsl(250,85%,70%),
+    hsl(200,85%,65%),
+    hsl(160,75%,60%),
+    hsl(40,85%,65%),
+    hsl(320,75%,68%),
+    hsl(250,85%,70%)
+  );
+  background-size: 200% 100%;
+  animation: shineScroll 4s linear infinite;
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: 5;
+}
+@keyframes shineScroll {
+  from { background-position: 0 0;    }
+  to   { background-position: 200% 0; }
+}
+
+/* ── 6. 3-D CUBE AVATAR ──────────────────────────────────────── */
+.cube-wrap {
+  position: relative;
+  width: 46px; height: 46px;
+  flex-shrink: 0;
+  perspective: 180px;
+}
+.cube {
+  width: 100%; height: 100%;
+  transform-style: preserve-3d;
+  animation: cubeRotate 10s linear infinite;
+}
+@keyframes cubeRotate {
+  0%   { transform: rotateX(0deg)   rotateY(0deg);   }
+  25%  { transform: rotateX(90deg)  rotateY(90deg);  }
+  50%  { transform: rotateX(180deg) rotateY(180deg); }
+  75%  { transform: rotateX(270deg) rotateY(270deg); }
+  100% { transform: rotateX(360deg) rotateY(360deg); }
+}
+
+.face {
+  position: absolute;
+  width: 46px; height: 46px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--f-display);
+  font-size: 0.85rem; font-weight: 800;
+  border-radius: 7px;
+  border: 1.5px solid rgba(255,255,255,0.22);
+  color: #fff;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.25);
+}
+.face.front  { background: linear-gradient(135deg,hsl(250,80%,62%),hsl(200,80%,58%)); transform: translateZ(23px); }
+.face.back   { background: linear-gradient(135deg,hsl(320,75%,62%),hsl(250,80%,62%)); transform: rotateY(180deg) translateZ(23px); }
+.face.left   { background: linear-gradient(135deg,hsl(200,80%,58%),hsl(160,70%,55%)); transform: rotateY(-90deg) translateZ(23px); }
+.face.right  { background: linear-gradient(135deg,hsl(160,70%,55%),hsl(40,80%,62%));  transform: rotateY(90deg)  translateZ(23px); }
+.face.top    { background: linear-gradient(135deg,hsl(40,80%,62%), hsl(320,75%,62%)); transform: rotateX(90deg)  translateZ(23px); }
+.face.bottom { background: linear-gradient(135deg,hsl(320,75%,62%),hsl(200,80%,58%)); transform: rotateX(-90deg) translateZ(23px); }
+
+.online-dot {
+  position: absolute;
+  bottom: 0; right: 0;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: #4ade80;
+  border: 2.5px solid var(--bg-base);
+  box-shadow: 0 0 8px rgba(74,222,128,0.7);
+  animation: dotBlink 2s ease-in-out infinite;
+}
+@keyframes dotBlink {
+  0%,100% { opacity:1;   box-shadow:0 0 8px rgba(74,222,128,0.7); }
+  50%      { opacity:0.4; box-shadow:0 0 3px rgba(74,222,128,0.3); }
+}
+
+/* ── 7. HEADER ───────────────────────────────────────────────── */
+.chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255,255,255,0.03);
+  flex-shrink: 0;
+  gap: 10px;
+}
+.header-left  { display:flex; align-items:center; gap:11px; flex-shrink:0; }
+.header-text  { display:flex; flex-direction:column; gap:2px; }
+
+.bot-name {
+  font-family: var(--f-display);
+  font-size: 1.12rem;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.bot-name span {
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.bot-status {
+  font-size: 0.70rem;
+  color: var(--text-dim);
+  display: flex; align-items: center; gap: 5px;
+  font-weight: 500;
+}
+.pulse-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 5px rgba(74,222,128,0.7);
+  animation: pd 2s ease-in-out infinite;
+}
+@keyframes pd {
+  0%,100% { transform:scale(1);    opacity:1;   }
+  50%      { transform:scale(1.55); opacity:0.5; }
+}
+
+/* ── LIVE CLOCK ── */
+.header-clock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  min-width: 110px;
+  text-align: center;
+}
+.clock-time {
+  font-family: var(--f-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.15;
+}
+.clock-date {
+  font-size: 0.62rem;
+  font-weight: 500;
+  color: var(--text-dim);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.header-actions { display:flex; gap:6px; flex-shrink:0; }
+
+/* ── ICON BUTTONS ── */
+.icon-btn {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-dim);
+  cursor: pointer;
+  display: flex; align-items:center; justify-content:center;
+  transition: background var(--dur) var(--ease),
+              color var(--dur) var(--ease),
+              box-shadow var(--dur) var(--ease),
+              transform var(--dur) var(--ease);
+}
+.icon-btn svg { width:15px; height:15px; }
+.icon-btn:hover {
+  background: var(--surface2);
+  color: var(--accent);
+  box-shadow: 0 0 14px rgba(140,120,255,0.30);
+  transform: translateY(-1px);
+}
+.icon-btn.active { color: var(--accent2); border-color: var(--accent2); }
+
+/* ── 8. CHAT WINDOW ──────────────────────────────────────────── */
+.chat-window {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px 18px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  scroll-behavior: smooth;
+}
+.chat-window::-webkit-scrollbar       { width: 5px; }
+.chat-window::-webkit-scrollbar-track { background: transparent; }
+.chat-window::-webkit-scrollbar-thumb {
+  background: linear-gradient(var(--accent), var(--accent2));
+  border-radius: 999px;
+}
+
+/* ── 9. MESSAGE ROWS ─────────────────────────────────────────── */
+.msg-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 9px;
+  animation: msgIn 0.30s var(--ease) both;
+}
+.msg-row.bot  { justify-content: flex-start; }
+.msg-row.user { justify-content: flex-end; flex-direction: row-reverse; }
+
+@keyframes msgIn {
+  from { opacity:0; transform: translateY(12px) scale(0.97); }
+  to   { opacity:1; transform: none; }
+}
+
+/* Avatars */
+.avatar {
+  width: 32px; height: 32px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  display: flex; align-items:center; justify-content:center;
+  font-family: var(--f-display);
+  font-size: 0.65rem; font-weight: 700;
+  letter-spacing: 0.03em;
+}
+.avatar.bot-av {
+  background: linear-gradient(135deg,rgba(140,120,255,0.28),rgba(140,120,255,0.06));
+  border: 1px solid rgba(140,120,255,0.28);
+  color: var(--accent);
+}
+.avatar.user-av {
+  background: linear-gradient(135deg,rgba(80,200,150,0.25),rgba(80,200,150,0.05));
+  border: 1px solid rgba(80,200,150,0.25);
+  color: var(--user-clr);
+}
+
+/* Bubbles */
+.bubble {
+  max-width: min(72%, 490px);
+  padding: 11px 15px;
+  border-radius: 18px;
+  font-size: 0.875rem;
+  line-height: 1.65;
+  word-break: break-word;
+  white-space: pre-wrap;
+  position: relative;
+}
+.msg-row.bot .bubble {
+  background: var(--bot-bubble);
+  border: 1px solid rgba(140,120,255,0.18);
+  border-bottom-left-radius: 4px;
+  color: var(--text);
+}
+.msg-row.user .bubble {
+  background: var(--user-bubble);
+  border: 1px solid rgba(80,200,150,0.20);
+  border-bottom-right-radius: 4px;
+  color: var(--text);
+  text-align: right;
+}
+
+/* Timestamp */
+.timestamp {
+  font-size: 0.62rem;
+  color: var(--text-dim);
+  margin-top: 5px;
+  display: block;
+}
+.msg-row.user .timestamp { text-align: right; }
+
+/* ── 10. TYPING INDICATOR ────────────────────────────────────── */
+.typing-row { display:flex; align-items:flex-end; gap:9px; }
+.typing-bubble {
+  background: var(--bot-bubble);
+  border: 1px solid rgba(140,120,255,0.18);
+  border-radius: 18px;
+  border-bottom-left-radius: 4px;
+  padding: 13px 17px;
+  display: flex; align-items:center; gap:6px;
+}
+.dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  animation: tdot 1.2s ease-in-out infinite;
+}
+.dot:nth-child(1) { background: var(--accent);  animation-delay:0s; }
+.dot:nth-child(2) { background: var(--accent2); animation-delay:.18s; }
+.dot:nth-child(3) { background: var(--accent3); animation-delay:.36s; }
+@keyframes tdot {
+  0%,80%,100% { transform:translateY(0);    opacity:0.40; }
+  40%          { transform:translateY(-8px); opacity:1;    }
+}
+
+/* ── 11. SUGGESTION CHIPS ────────────────────────────────────── */
+.suggestions {
+  display: flex;
+  gap: 7px;
+  padding: 9px 18px 5px;
+  overflow-x: auto;
+  flex-shrink: 0;
+  scrollbar-width: none;
+}
+.suggestions::-webkit-scrollbar { display:none; }
+
+.chip {
+  white-space: nowrap;
+  padding: 6px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-dim);
+  font-family: var(--f-body);
+  font-size: 0.76rem; font-weight: 500;
+  cursor: pointer;
+  transition: all var(--dur) var(--ease);
+}
+.chip:hover {
+  background: var(--surface2);
+  border-color: var(--accent);
+  color: var(--text);
+  box-shadow: 0 0 14px rgba(140,120,255,0.25);
+  transform: translateY(-2px);
+}
+
+/* ── 12. INPUT ROW ───────────────────────────────────────────── */
+.input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px 14px;
+  border-top: 1px solid var(--border);
+  background: rgba(255,255,255,0.02);
+  flex-shrink: 0;
+}
+.input-wrap { flex:1; position:relative; }
+
+.input-wrap input {
+  width: 100%;
+  padding: 11px 17px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.05);
+  color: var(--text);
+  font-family: var(--f-body);
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color var(--dur) var(--ease),
+              box-shadow   var(--dur) var(--ease);
+  caret-color: var(--accent);
+}
+.input-wrap input::placeholder { color: var(--text-dim); }
+.input-wrap input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(140,120,255,0.15);
+}
+
+/* Send button */
+.send-btn {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+  cursor: pointer;
+  display: flex; align-items:center; justify-content:center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 18px rgba(140,120,255,0.40);
+  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+.send-btn svg { width:17px; height:17px; }
+.send-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 28px rgba(140,120,255,0.55);
+}
+.send-btn:active { transform: scale(0.95); }
+
+.tts-btn.active { color: var(--accent2); border-color: var(--accent2); }
+
+/* ── 13. WELCOME CARD ────────────────────────────────────────── */
+.welcome-card {
+  align-self: center;
+  text-align: center;
+  padding: 30px 26px;
+  border-radius: 22px;
+  border: 1px dashed var(--border);
+  background: var(--surface);
+  max-width: 390px;
+  margin: auto;
+  animation: msgIn 0.5s var(--ease) both;
+}
+.welcome-card .w-emoji { font-size:2.5rem; margin-bottom:10px; display:block; }
+.welcome-card h2 {
+  font-family: var(--f-display);
+  font-size: 1.22rem; font-weight: 800;
+  margin-bottom: 7px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.welcome-card p { font-size:0.82rem; color:var(--text-dim); line-height:1.65; }
+
+/* ── 14. MOBILE ──────────────────────────────────────────────── */
+@media (max-width: 540px) {
+  .chat-card  { width:100%; height:100svh; border-radius:0; }
+  body        { align-items:flex-start; }
+  .tilt-wrap  { perspective:none; }
+  .bubble     { max-width:86%; }
+  .header-clock { display:none; }      /* hides clock on tiny screens */
+  .bg-grid    { display:none; }
+}
+
+/* ── 15. REDUCED MOTION ──────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
